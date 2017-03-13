@@ -76,18 +76,23 @@
 
 (deftask download-nifi
    "Sets up NiFi locally in the project"
-   [F force bool "Forces the nifi-home directory to be overwritten"]
+  [F force bool "Forces the nifi-home directory to be overwritten"
+   A archive ARCHIVE str "path to nifi archive"
+   V version VERSION str "nifi version"]
    (let [tmp (boot/tmp-dir!)]
      (comp (fn middleware [next-handler]
              (fn handler [fileset]
                (util/info "Downloading NiFi...\n")
                (when (or force (not (.exists (io/file "./nifi-home"))))
                      (boot/empty-dir! tmp)
-                     (with-open [in (io/input-stream "/home/goran/projects/nifi.zip")
+                     (with-open [in (io/input-stream (or
+                                                      archive
+                                                      "https://archive.apache.org/dist/nifi/1.1.0/nifi-1.1.0-bin.zip"))
                                  out (io/output-stream (io/file tmp "nifi.zip"))]
                        (io/copy in out))
                      (compression/unzip (io/file tmp "nifi.zip") tmp)
-                     (fs/copy-dir (io/file tmp "nifi-1.1.0")
+                     (fs/copy-dir (io/file tmp (str "nifi-" (or version
+                                                                "1.1.0")))
                                   (io/file tmp "nifi-home")))
                (next-handler (-> fileset
                                  (boot/add-resource tmp)
@@ -107,4 +112,3 @@
          (future (-> (new RunNiFi (io/file conf-path) (boolean verbose))
                      (.start))))
        (next-handler fileset))))
-

@@ -1,5 +1,5 @@
-(def project 'big-solutions/boot-nifi)
-(def version "0.1.0")
+(def project 'com.yetanalytics/boot-nifi)
+(def version "0.1.1-SNAPSHOT")
 
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
